@@ -211,7 +211,7 @@ class TrafficLight:
         self.set_right_arrow(right_arrow_state)
         self.set_left_arrow(left_arrow_state)
 class Car:
-    def __init__(self, canvas, x, y, color="red", turning="None", maxspeed=3, angle=0, traffic_light=None):
+    def __init__(self, canvas, x, y, color="red", turning="None", maxspeed=3, angle=0, traffic_light=None, id=None):
         """
         Initialize a car object.
 
@@ -223,6 +223,8 @@ class Car:
             maxspeed: Maximum speed of the car.
             angle: The initial angle of the car.
         """
+        self.waiting = False
+        self.waitTime = 0
         self.active = True
         self.canvas = canvas
         self.x = x
@@ -230,6 +232,7 @@ class Car:
         self.color = color
         self.turning = turning
         self.indicator = False
+        self.id = id
         self.maxspeed = maxspeed
         self.speed = maxspeed
         self.angle = angle
@@ -548,8 +551,6 @@ class CarController:
             self.navigate_to(next_x, next_y)
         else:
             # Optionally, stop the car or loop the path
-
-
             self.car.active = False
             self.active = False
             # self.current_step = 0  # Uncomment to loop the path
@@ -562,6 +563,31 @@ class CarController:
         dx = target_x - self.car.x
         dy = target_y - self.car.y
         distance = math.sqrt(dx**2 + dy**2)
+        #print(self.car.waitTime)
+        #print(self.car.waiting)
+        if self.car.speed < 0.1 and (self.car.turning =="None" and self.car.traffic_light.current_light == "red"):
+            self.car.waiting = True
+            self.car.waitTime += 1
+        elif self.car.traffic_light.has_left_turn and self.car.speed <0.1:
+            if self.car.turning =="Left" and self.car.traffic_light.current_left_arrow == "red":
+                self.car.waiting = True
+                self.car.waitTime += 1
+        elif self.car.traffic_light.has_right_turn and self.car.speed <0.1:
+            if self.car.turning =="Right" and self.car.traffic_light.current_right_arrow == "red":
+                self.car.waiting = True
+                self.car.waitTime += 1
+        elif self.car.speed < 0.1 and (self.car.turning =="Left" and self.car.traffic_light.current_light == "red"):
+                self.car.waiting = True
+                self.car.waitTime += 1
+        elif self.car.speed < 0.1 and (self.car.turning =="right" and self.car.traffic_light.current_light == "red"):
+                self.car.waiting = True
+                self.car.waitTime += 1
+        else:
+            self.car.waiting = False
+
+        if self.car.speed < 0.1 and (self.car.turning =="None" and self.car.traffic_light.current_light == "red"):
+            self.car.waiting = True
+            self.car.waitTime += 1
         if self.current_step == 0 and self.car.turning == "Left" and distance < 200:
             self.car.maxspeed = 1
             #print("slwo")
@@ -698,10 +724,8 @@ top_left.set_light_and_arrows("green", "off", "off")
 top_right.set_light_and_arrows("yellow", "yellow", "off")
 bottom_left.set_light_and_arrows("red", "off", "yellow")
 bottom_right.set_light_and_arrows("red", "off", "off")
-cars = []
 
-for i in range(0,0):
-    cars.append(Car(canvas, x=i*-50+00, y=675, angle=270, traffic_light=top_left))
+
 
 
 # Draw a line to complete the arrow
@@ -732,80 +756,95 @@ paths = [
 
 # Create CarController instances
 
-controllers = [CarController(car, paths[0]) for car in cars]
-tempcars = []
-for i in range(0,10):
-    tempcars.append(Car(canvas, x=i*50+1400, y=725, angle=90, traffic_light=bottom_right))
-for car in tempcars:
-    controllers.append(CarController(car,paths[1]))
-cars += tempcars
-# tempcars = []
-# for i in range(0,10):
-#     tempcars.append(Car(canvas, x=767, y=i*-50, angle=0, traffic_light=top_right))
-# for car in tempcars:
-#     controllers.append(CarController(car,paths[2]))
-# cars += tempcars
-# tempcars = []
-# for i in range(0,10):
-#     tempcars.append(Car(canvas, x=633, y=i*50+1400, angle=180, traffic_light=bottom_left))
-# for car in tempcars:
-#     controllers.append(CarController(car,paths[3]))
-# cars += tempcars
-
-# tempcars = []
-# for i in range(0,10):
-#     tempcars.append(Car(canvas, x=767, y=i*-50, angle=0, traffic_light=top_right, turning = "Left"))
-# for car in tempcars:
-#     controllers.append(CarController(car,paths[4]))
-# cars += tempcars
-
-# tempcars = []
-# for i in range(0,10):
-#     tempcars.append(Car(canvas, x=633, y=i*50+1400, angle=180, traffic_light=bottom_left, turning = "Left"))
-# for car in tempcars:
-#     controllers.append(CarController(car,paths[6]))
-# cars += tempcars
-# tempcars = []
-# for i in range(0,10):
-#     tempcars.append(Car(canvas, x=i*-50, y=625, angle=270, traffic_light=top_left, turning = "Left"))
-# for car in tempcars:
-#     controllers.append(CarController(car,paths[7]))
-# cars += tempcars
-
-# tempcars = []
-# for i in range(0,10):
-#     tempcars.append(Car(canvas, x=1400+i*50, y=775, angle=90, traffic_light=bottom_right, turning = "Left"))
-# for car in tempcars:
-#     controllers.append(CarController(car,paths[8]))
-# cars += tempcars
-
-
-# tempcars = []
-# for i in range(0,10):
-#     tempcars.append(Car(canvas, x=i*50+1400, y=675, angle=90, traffic_light=top_right, turning = "Right"))
-# for car in tempcars:
-#     controllers.append(CarController(car,paths[5]))
-# cars += tempcars
-
-# tempcars = []
-# for i in range(0,10):
-#     tempcars.append(Car(canvas, x=700, y=i*50+1400, angle=180, traffic_light=bottom_left, turning = "Right"))
-# for car in tempcars:
-#     controllers.append(CarController(car,paths[9]))
-# cars += tempcars
-
-# tempcars = []
-# for i in range(0,10):
-#     tempcars.append(Car(canvas, x=700, y=i*-50, angle=0, traffic_light=bottom_left, turning = "Right"))
-# for car in tempcars:
-#     controllers.append(CarController(car,paths[10]))
-# cars += tempcars
-tempcars = []
-for i in range(0,10):
-    tempcars.append(Car(canvas, x=i*-50, y=725, angle=270, traffic_light=bottom_left, turning = "Right"))
-for car in tempcars:
-    controllers.append(CarController(car,paths[11]))
-cars += tempcars
+# controllers = [CarController(car, paths[0]) for car in cars]
+controllers = []
+cars = []
+def createcar(option):
+    global cars
+    global controllers
+    if option == 1:
+        tempcars = []
+        for i in range(0,1):
+            tempcars.append(Car(canvas, x=i*50+1400, y=725, angle=90, traffic_light=bottom_right, id=1))
+        for car in tempcars:
+            controllers.append(CarController(car,paths[1]))
+        cars += tempcars
+    elif option == 2:
+        tempcars = []
+        for i in range(0,1):
+            tempcars.append(Car(canvas, x=767, y=i*-50, angle=0, traffic_light=top_right, id=2))
+        for car in tempcars:
+            controllers.append(CarController(car,paths[2]))
+        cars += tempcars
+    elif option == 3:
+        tempcars = []
+        for i in range(0,1):
+            tempcars.append(Car(canvas, x=633, y=i*50+1400, angle=180, traffic_light=bottom_left, id=3))
+        for car in tempcars:
+            controllers.append(CarController(car,paths[3]))
+        cars += tempcars
+    elif option == 4:
+        tempcars = []
+        for i in range(0,1):
+            tempcars.append(Car(canvas, x=767, y=i*-50, angle=0, traffic_light=top_right, turning = "Left", id=4))
+        for car in tempcars:
+            controllers.append(CarController(car,paths[4]))
+        cars += tempcars
+    elif option == 5:
+        tempcars = []
+        for i in range(0,1):
+            tempcars.append(Car(canvas, x=633, y=i*50+1400, angle=180, traffic_light=bottom_left, turning = "Left", id=5))
+        for car in tempcars:
+            controllers.append(CarController(car,paths[6]))
+        cars += tempcars
+    elif option == 6:
+        tempcars = []
+        for i in range(0,1):
+            tempcars.append(Car(canvas, x=i*-50, y=625, angle=270, traffic_light=top_left, turning = "Left", id=6))
+        for car in tempcars:
+            controllers.append(CarController(car,paths[7]))
+        cars += tempcars
+    elif option == 7:
+        tempcars = []
+        for i in range(0,1):
+            tempcars.append(Car(canvas, x=1400+i*50, y=775, angle=90, traffic_light=bottom_right, turning = "Left", id=7))
+        for car in tempcars:
+            controllers.append(CarController(car,paths[8]))
+        cars += tempcars
+    elif option == 8:
+        tempcars = []
+        for i in range(0,1):
+            tempcars.append(Car(canvas, x=i*50+1400, y=675, angle=90, traffic_light=top_right, turning = "Right", id=8))
+        for car in tempcars:
+            controllers.append(CarController(car,paths[5]))
+        cars += tempcars
+    elif option == 9:
+        tempcars = []
+        for i in range(0,1):
+            tempcars.append(Car(canvas, x=700, y=i*50+1400, angle=180, traffic_light=bottom_left, turning = "Right", id=9))
+        for car in tempcars:
+            controllers.append(CarController(car,paths[9]))
+        cars += tempcars
+    elif option == 10:
+        tempcars = []
+        for i in range(0,1):
+            tempcars.append(Car(canvas, x=700, y=i*-50, angle=0, traffic_light=bottom_left, turning = "Right", id=10))
+        for car in tempcars:
+            controllers.append(CarController(car,paths[10]))
+        cars += tempcars
+    elif option == 11:
+        tempcars = []
+        for i in range(0,1):
+            tempcars.append(Car(canvas, x=i*-50, y=725, angle=270, traffic_light=bottom_left, turning = "Right", id=11))
+        for car in tempcars:
+            controllers.append(CarController(car,paths[11]))
+        cars += tempcars
+    elif option == 12:
+        tempcars = []
+        for i in range(0,1):
+            cars.append(Car(canvas, x=i*-50+00, y=675, angle=270, traffic_light=top_left, id=12))
+        for car in tempcars:
+            controllers.append(CarController(car,paths[0]))
 def animate():
     active_controllers  = [controller for controller in controllers if controller.active]
     if active_controllers :  # Only continue if there are active controllers
@@ -842,16 +881,109 @@ def change_light_sequence(light1,light2):
         light1.set_light("green")
         light2.set_light("green")
         root.after(3000, change_light_sequence,light1,light2)
-change_light_sequence(top_left,bottom_right)
+#createcar(1)#horizontal straight
+#lights that are together: top_left, bottom_right 
+#arrows, 
+#top_right bottom_left
+#change_light_sequence(top_left, bottom_right)
+def change_lights(lights):
+    if lights == "arrows":
+        if top_left.current_light == "green":
+            top_left.set_light("yellow")
+            bottom_right.set_light("yellow")
+            root.after(3000, change_lights, lights)
+        elif top_left.current_light == "yellow":
+            top_left.set_light("red")
+            bottom_right.set_light("red")
+            root.after(3000, change_lights, lights)
+        elif bottom_left.current_light == "green":
+            bottom_left.set_light("yellow")
+            top_right.set_light("yellow")
+            root.after(3000, change_lights, lights)
+        elif bottom_left.current_light == "yellow":
+            bottom_left.set_light("red")
+            top_right.set_light("red")
+            root.after(3000, change_lights, lights)
+        elif top_left.current_light == "red" and bottom_left.current_light == "red":
+            top_right.set_left_arrow("green")
+            bottom_right.set_right_arrow("green")
+    if lights == "horizontal":
+        if bottom_left.current_light == "green":
+            bottom_left.set_light("yellow")
+            top_right.set_light("yellow")
+            root.after(3000, change_lights, lights)
+        elif bottom_left.current_light == "yellow":
+            bottom_left.set_light("red")
+            top_right.set_light("red")
+            root.after(3000, change_lights, lights)
+        elif top_right.current_left_arrow == "green":
+            top_right.set_left_arrow("yellow")
+            bottom_right.set_right_arrow("yellow")
+            root.after(3000, change_lights, lights)
+        elif top_right.current_left_arrow == "yellow":
+            top_right.set_left_arrow("red")
+            bottom_right.set_right_arrow("red")
+            root.after(3000, change_lights, lights)
+        elif bottom_left.current_light == "red" and top_right.current_left_arrow == "red":
+            top_left.set_light("green")
+            bottom_right.set_light("green")
+    if lights == "vertical":
+        if top_left.current_light == "green":
+            top_left.set_light("yellow")
+            bottom_right.set_light("yellow")
+            root.after(3000, change_lights, lights)
+        elif top_left.current_light == "yellow":
+            top_left.set_light("red")
+            bottom_right.set_light("red")
+            root.after(3000, change_lights, lights)
+        elif top_right.current_left_arrow == "green":
+            top_right.set_left_arrow("yellow")
+            bottom_right.set_right_arrow("yellow")
+            root.after(3000, change_lights, lights)
+        elif top_right.current_left_arrow == "yellow":
+            top_right.set_left_arrow("red")
+            bottom_right.set_right_arrow("red")
+            root.after(3000, change_lights, lights)
+        elif top_right.current_left_arrow == "red" and top_left.current_light == "red":
+            bottom_left.set_light("green")
+            top_right.set_light("green")
+def get_rl_state():
+    # Extracts the state representation for the RL model
+    state = [[],[],[],[],[],[],[],[],[],[],[],[]]
+    for car in cars:
+        if car.active:
+            if car.waiting:
+                state[car.id-1].append(car.waitTime)
+            else:
+                state[car.id-1].append(0)
+    return state
+
+def getCost():
+    cost = 0
+    for car in cars:
+        cost += car.waitTime
+
+change_lights("horizontal")
 #change_light_sequence(top_right,bottom_left)
+def createcars(id, timer, max_count=10):
+    if max_count > 0:
+        createcar(id)
+        drive(cars[-1])
+        print(get_rl_state())
+        root.after(timer, createcars, id, timer, max_count - 1)  # Decrement count each time
+createcars(1,3000)
+createcars(2,3000)  
+
+
 
 animate()
 
-for car in cars:
-    cars = [car for car in cars if car.active]
 
-    #animate()
-    drive(car)
+# for car in cars:
+#     cars = [car for car in cars if car.active]
+
+#     #animate()
+#     drive(car)
 
 
 root.mainloop()
